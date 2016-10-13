@@ -5,9 +5,7 @@ var io = require('socket.io')({
 io.attach(8080);
 
 io.on('connection', function(socket){
-	socket.on("CreateRoom", function(data){
-		console.log(data.id);
-	});
+	
 });
 
 
