@@ -10,10 +10,10 @@ io.on('connection', function(socket){
 	
 	//TODO: als een speler nieuw start add alle rooms die al aktief zijn
 	
-	console.log(socket.id);
+	console.log("Socket: " + socket.id + " Connected");
 	
 	socket.on("CreateRoom", function(dataG){
-		rooms.push(dataG);
+		rooms.push(dataG.id);
 		
 		var dataS = {
 			id: dataG.id,
@@ -28,10 +28,11 @@ io.on('connection', function(socket){
 	});
 	
 	socket.on("JoinRoom", function(dataG){
-		socket.join(dataG);
+		socket.join(dataG.id);
 		
 		var dataS = {
 			name: dataG.name,
+			team: "u",
 		}
 		
 		io.sockets.in(dataG).emit("PlayerJoined", dataS);
@@ -48,6 +49,9 @@ io.on('connection', function(socket){
 		}
 		
 		io.sockets.in(dataG).emit("OnChangeTeam", dataS)
+	});
+	socket.on('disconnect', function () {
+		console.log("Socket: " + socket.id + " Disconnected");
 	});
 });
 

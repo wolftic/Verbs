@@ -38,6 +38,17 @@ public class Room : MonoBehaviour {
         p.GetComponentInChildren<Text>().text = player.name;
         p.transform.name = player.name;
         p.transform.SetParent(GameObject.Find("UnAssigned").transform);
+
+        for(int i = 0; i < players.Count; i++)
+        {
+            if (localPlayer != players[i])
+            {
+                GameObject a = Instantiate(playerPrefab) as GameObject;
+                a.GetComponentInChildren<Text>().text = players[i].name;
+                a.transform.name = players[i].name;
+                a.transform.SetParent(GameObject.Find("UnAssigned").transform);
+            }
+        }
     }
 
     void OnJoin(SocketIOEvent e)
