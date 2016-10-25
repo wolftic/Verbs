@@ -6,100 +6,112 @@ using SocketIO;
 using LitJson;
 
 [System.Serializable]
-public class nRoom
+public class P
+{
+    public string name;
+    public string team;
+}
+
+[System.Serializable]
+public class R
 {
     public int id;
-    public List<Player> players = new List<Player>();
+    public List<P> players = new List<P>();
+}
+
+public class Data
+{
+    public string playerName;
+    public int id;
+    public List<P> playersInRoom = new List<P>();
 }
 
 public class RoomManager : MonoBehaviour {
-
-    public string localPlayerName;
+    [SerializeField] private GameObject _roomPrefab;
 
     private SocketIOComponent _socket;
+    private RoomManagerUI _UI;
 
-    [SerializeField] private GameObject roomPrefab;
-    [SerializeField] private List<nRoom> rooms = new List<nRoom>();
+    [SerializeField] private List<R> _rooms = new List<R>();
     [SerializeField] private GameObject roomsObject;
 
-    private InputField inputFieldRoomId;
-    private RoomManagerUI ui;
+    [SerializeField] private InputField _idField;
 
     void Start()
     {
-        _socket = GameObject.Find("SocketIO").GetComponent<SocketIOComponent>();
-        _socket.On("RoomCreated", NewRoomCreated);
+        _socket = _socket = GameObject.Find("SocketIO").GetComponent<SocketIOComponent>();
+        _UI = GetComponent<RoomManagerUI>();
 
-        ui = GetComponent<RoomManagerUI>();
-        inputFieldRoomId = GameObject.Find("RoomId").GetComponent<InputField>();
+        _socket.On("RoomCreated", RoomCreated);
     }
 
-    public void CreateRoom()
+    void CreateRoom()
     {
-        ui.ToRoom();
+        _UI.ToRoom();
 
-        nRoom newRoom = new nRoom();
-        int createdRoomId = Random.Range(0, 100);
-        newRoom.id = createdRoomId;
-        
-        rooms.Add(newRoom);
+        P player = new P();
+        R room = new R();
 
-        GameObject roomObject = Instantiate(roomPrefab) as GameObject;
-        roomObject.GetComponent<Room>().id = newRoom.id;    
-
-        roomObject.transform.name = newRoom.id.ToString();
-
-        Player player = new Player();
-        player.name = localPlayerName;
+        player.name = "bram"; //TODO: set player name
         player.team = "u";
 
-        newRoom.players.Add(player);
-        GameObject.Find(createdRoomId.ToString()).GetComponent<Room>().Join(player);
+        room.id = Random.Range(0, 100);
+        room.players.Add(player);
 
-        string jsonRoom = JsonMapper.ToJson(newRoom);
-        _socket.Emit("CreateRoom", new JSONObject(jsonRoom));
+        Data data = new Data();
+        data.playerName = player.name;
+        data.id = room.id;
+        data.playersInRoom = room.players;
+
+        GameObject roomObject = Instantiate(_roomPrefab) as GameObject;
+        roomObject.transform.name = room.id.ToString();
+        roomObject.transform.SetParent(roomsObject.transform);
+        roomObject.GetComponent<Room>().IntializeRoom(room.id, room.players);
+
+        string d = JsonMapper.ToJson(data);
+        _socket.Emit("CreateRoom", new JSONObject(d));
     }
 
-    public void JoinRoom()
+    void RoomCreated(SocketIOEvent e)
     {
-        int id = int.Parse(inputFieldRoomId.text);
-        for(int i = 0; i < rooms.Count; i++)
+        R room = JsonMapper.ToObject<R>(e.data.ToString());
+        _rooms.Add(room);
+
+        GameObject roomObject = Instantiate(_roomPrefab) as GameObject;
+        roomObject.transform.name = room.id.ToString();
+        roomObject.transform.SetParent(roomsObject.transform);
+        roomObject.GetComponent<Room>().IntializeRoom(room.id, room.players);
+        roomObject.SetActive(false);
+    }
+
+    void JoinRoom()
+    {
+        for (int i = 0; i < _rooms.Count; i++)
         {
-            if(rooms[i].id == id)
+            if(int.Parse(_idField.text) == _rooms[i].id)
             {
-                ui.ToRoom();
+                _UI.ToRoom();
 
-                roomsObject.transform.Find(rooms[i].id.ToString()).gameObject.SetActive(true);
+                roomsObject.transform.Find(_idField.text).gameObject.SetActive(true);
 
-                Player player = new Player();
-                player.name = localPlayerName;
+                P player = new P();
+
+                player.name = "maarten";
                 player.team = "u";
 
-                rooms[i].players.Add(player);
+                _rooms[i].players.Add(player);
 
-                string jsonRoom = JsonMapper.ToJson(rooms[i]);
-                _socket.Emit("JoinRoom", new JSONObject(jsonRoom));
+                Data data = new Data();
+                data.playerName = player.name;
+                data.id = _rooms[i].id;
+                data.playersInRoom = _rooms[i].players;
 
-                GameObject.Find(rooms[i].id.ToString()).GetComponent<Room>().Join(player);
+                string d = JsonMapper.ToJson(data);
+                _socket.Emit("JoinRoom", new JSONObject(d));
             }
         }
     }
 
-    void NewRoomCreated(SocketIOEvent e)
-    {
-        nRoom newRoom = JsonMapper.ToObject<nRoom>(e.data.ToString());
-        Debug.Log(e.data.ToString());
-        
-        rooms.Add(newRoom);
-        GameObject roomObject = Instantiate(roomPrefab) as GameObject;
-        roomObject.GetComponent<Room>().id = newRoom.id;
-
-        roomObject.transform.name = newRoom.id.ToString();
-
-        roomObject.transform.SetParent(roomsObject.transform);
-
-        roomObject.SetActive(false);
-    }
 }
 //https://lbv.github.io/litjson/docs/quickstart.html
 //litjson doc

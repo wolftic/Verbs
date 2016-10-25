@@ -40,7 +40,7 @@ public class RoomManagerUI : MonoBehaviour {
         if (inputFieldName.text != "")
         {
             currentName.text = "Current name: " + inputFieldName.text;
-            GetComponent<RoomManager>().localPlayerName = inputFieldName.text;
+            //GetComponent<RoomManager>().localPlayerName = inputFieldName.text;
         }
     }
 }

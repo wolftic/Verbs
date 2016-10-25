@@ -2,89 +2,91 @@
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using SocketIO;
 using LitJson;
 
-[System.Serializable]
-public class Player {
-    public string name;
-    public string team;
-}
-
 public class Room : MonoBehaviour {
-    public int id;
 
-    [SerializeField] private GameObject localPlayerObject;
-    [SerializeField] private Player localPlayer;
-    [SerializeField] private GameObject playerPrefab;
-    [SerializeField] public List<Player> players = new List<Player>();
+    [SerializeField] private GameObject _playerPrefab;
+
+    [SerializeField] private int _id;
+    [SerializeField] private List<P> _players = new List<P>();
 
     private SocketIOComponent _socket;
+
+    [SerializeField] private P localPlayer;
 
     void Start()
     {
         _socket = GameObject.Find("SocketIO").GetComponent<SocketIOComponent>();
-        _socket.On("PlayerJoined", OnJoin);
-        _socket.On("OnChangeTeam", OnChangeTeam);
+
+        _socket.On("PlayerJoined", PlayerJoined);
+        _socket.On("PlayerChangedTeam", PlayerChangedTeam);
     }
 
-    public void Join(Player player)
+    public void IntializeRoom(int id, List<P> players)
     {
-        players.Add(player);
-        
-        localPlayer = player;
-        GameObject p = Instantiate(playerPrefab) as GameObject;
-        localPlayerObject = p;
-        p.GetComponentInChildren<Text>().text = player.name;
-        p.transform.name = player.name;
-        p.transform.SetParent(GameObject.Find("UnAssigned").transform);
+        _id = id;
+        _players = players;
 
-        for(int i = 0; i < players.Count; i++)
+        localPlayer = players[0];
+
+        GameObject playerObject = Instantiate(_playerPrefab) as GameObject;
+        playerObject.transform.name = _players[0].name;
+        playerObject.GetComponentInChildren<Text>().text = _players[0].name;
+        playerObject.transform.SetParent(GameObject.Find("u").transform);
+    }
+
+    public void Join(P player)
+    {
+        localPlayer = player;
+
+        GameObject playerObject = Instantiate(_playerPrefab) as GameObject;
+        playerObject.transform.name = player.name;
+        playerObject.transform.SetParent(GameObject.Find("u").transform);
+    }
+
+    void PlayerJoined(SocketIOEvent e)
+    {
+        Data data = JsonMapper.ToObject<Data>(e.data.ToString());
+        P player = new P();
+        for (int i = 0; i < data.playersInRoom.Count; i++)
         {
-            if (localPlayer != players[i])
+            if(data.playersInRoom[i].name == data.playerName)
             {
-                GameObject a = Instantiate(playerPrefab) as GameObject;
-                a.GetComponentInChildren<Text>().text = players[i].name;
-                a.transform.name = players[i].name;
-                a.transform.SetParent(GameObject.Find("UnAssigned").transform);
+                player = data.playersInRoom[i];
+            }
+        }
+        _players.Add(player);
+
+        GameObject playerObject = Instantiate(_playerPrefab) as GameObject;
+        playerObject.transform.name = player.name;
+        playerObject.GetComponentInChildren<Text>().text = player.name;
+        playerObject.transform.SetParent(GameObject.Find("u").transform);
+    }
+
+    public void ChangeTeam(string team)
+    {
+        GameObject playerObject = GameObject.Find(localPlayer.name.ToString());
+        playerObject.transform.SetParent(GameObject.Find(team.ToString()).transform);
+        localPlayer.team = team;
+
+        string d = JsonMapper.ToJson(localPlayer);
+        _socket.Emit("ChangeTeam", new JSONObject(d));
+    }
+
+    void PlayerChangedTeam(SocketIOEvent e)
+    {
+        P player = JsonMapper.ToObject<P>(e.data.ToString());
+
+        for (int i = 0; i < _players.Count; i++)
+        {
+            if (_players[i].name == player.name)
+            {
+                _players[i].team = player.team;
+                GameObject.Find(player.name).transform.SetParent(GameObject.Find(player.team).transform);
             }
         }
     }
-
-    void OnJoin(SocketIOEvent e)
-    {
-        Player player = JsonMapper.ToObject<Player>(e.data.ToString());
-        players.Add(player);
-
-        GameObject p = Instantiate(playerPrefab) as GameObject;
-        p.GetComponentInChildren<Text>().text = player.name;
-        p.transform.name = player.name;
-        p.transform.SetParent(GameObject.Find("UnAssigned").transform);
-    }
-
-    void OnChangeTeam(SocketIOEvent e)
-    {
-        
-    }
-
-    public void JoinRobbers()
-    {
-        localPlayer.team = "r";
-        string jsonTeam = JsonMapper.ToJson(localPlayer);
-
-        _socket.Emit("ChangeTeam", new JSONObject(jsonTeam));
-
-        localPlayerObject.transform.SetParent(GameObject.Find("CurrentRobbers").transform);
-    }
-
-    public void JoinCops()
-    {
-        localPlayer.team = "c";
-        string jsonTeam = JsonMapper.ToJson(localPlayer);
-
-        _socket.Emit("ChangeTeam", new JSONObject(jsonTeam));
-
-        localPlayerObject.transform.SetParent(GameObject.Find("CurrentCops").transform);
-    }
-    
 }

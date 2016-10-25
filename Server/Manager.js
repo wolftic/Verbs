@@ -13,31 +13,36 @@ io.on('connection', function(socket){
 	console.log("Socket: " + socket.id + " Connected");
 	
 	socket.on("CreateRoom", function(dataG){
-		rooms.push(dataG.id);
+		var room = {
+			id: dataG.id,
+			players: dataG.playersInRoom,
+		}
+		
+		rooms.push(room);
 		
 		var dataS = {
-			id: dataG.id,
-			players: dataG.players,
+			id: room.id,
+			players: room.players,
 		}
 		socket.broadcast.emit("RoomCreated",dataS);
 		
-		socket.join(dataG);
+		socket.join(dataG.id);
 		
-		console.log("Socket: " + socket.id + " Created room: ");
 		console.log(dataG);
+		
 	});
 	
 	socket.on("JoinRoom", function(dataG){
 		socket.join(dataG.id);
 		
 		var dataS = {
-			name: dataG.name,
-			team: "u",
+			name: dataG.playerName,
+			id: dataG.id,
+			players: dataG.playersInRoom,
 		}
+		socket.to(dataG.id).emit("PlayerJoined",dataS);
 		
-		io.sockets.in(dataG).emit("PlayerJoined", dataS);
 		
-		console.log("Socket: " + socket.id + " Joined room: ");
 		console.log(dataG);
 	});
 	
@@ -48,7 +53,9 @@ io.on('connection', function(socket){
 			team: dataG.team,
 		}
 		
-		io.sockets.in(dataG).emit("OnChangeTeam", dataS)
+		io.sockets.in(dataG).emit("PlayerChangedTeam", dataS)
+		
+		console.log(dataG);
 	});
 	socket.on('disconnect', function () {
 		console.log("Socket: " + socket.id + " Disconnected");
