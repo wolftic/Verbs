@@ -18,6 +18,8 @@ io.on('connection', function(socket){
 			players: dataG.playersInRoom,
 		}
 		
+		console.log(room.id);
+		
 		rooms.push(room);
 		
 		var dataS = {
@@ -28,34 +30,42 @@ io.on('connection', function(socket){
 		
 		socket.join(dataG.id);
 		
-		console.log(dataG);
+		//console.log(dataG);
 		
 	});
 	
 	socket.on("JoinRoom", function(dataG){
 		socket.join(dataG.id);
 		
+		for(var i = 0; i < rooms.length; i++){
+			if(dataG.id == rooms[i].id){
+				rooms[i].players = dataG.playersInRoom;
+				console.log(rooms[i].players);
+			}
+		}
+		
 		var dataS = {
-			name: dataG.playerName,
+			playerName: dataG.playerName,
 			id: dataG.id,
-			players: dataG.playersInRoom,
+			playersInRoom: dataG.playersInRoom,
 		}
 		socket.to(dataG.id).emit("PlayerJoined",dataS);
 		
-		
-		console.log(dataG);
+		//console.log(dataG);
 	});
 	
 	socket.on("ChangeTeam", function(dataG){
+		console.log(dataG.name);
+		var res = dataG.name.split(",");
 		
 		var dataS = {
-			name: dataG.name,
+			name: res[0],
 			team: dataG.team,
 		}
 		
-		io.sockets.in(dataG).emit("PlayerChangedTeam", dataS)
+		io.sockets.in(res[1]).emit("PlayerChangedTeam", dataS)
 		
-		console.log(dataG);
+		console.log(res[1]);
 	});
 	socket.on('disconnect', function () {
 		console.log("Socket: " + socket.id + " Disconnected");

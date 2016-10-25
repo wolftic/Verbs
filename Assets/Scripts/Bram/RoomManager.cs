@@ -35,6 +35,10 @@ public class RoomManager : MonoBehaviour {
     [SerializeField] private List<R> _rooms = new List<R>();
     [SerializeField] private GameObject roomsObject;
 
+    [SerializeField] private InputField _nameField;
+    [SerializeField] private Text _nameText;
+    [SerializeField] private string currentName;
+
     [SerializeField] private InputField _idField;
 
     void Start()
@@ -45,6 +49,12 @@ public class RoomManager : MonoBehaviour {
         _socket.On("RoomCreated", RoomCreated);
     }
 
+    public void ChangeName()
+    {
+        _nameText.text = "Current name: " + _nameField.text;
+        currentName = _nameField.text;;
+    }
+
     void CreateRoom()
     {
         _UI.ToRoom();
@@ -52,7 +62,7 @@ public class RoomManager : MonoBehaviour {
         P player = new P();
         R room = new R();
 
-        player.name = "bram"; //TODO: set player name
+        player.name = currentName;
         player.team = "u";
 
         room.id = Random.Range(0, 100);
@@ -66,7 +76,7 @@ public class RoomManager : MonoBehaviour {
         GameObject roomObject = Instantiate(_roomPrefab) as GameObject;
         roomObject.transform.name = room.id.ToString();
         roomObject.transform.SetParent(roomsObject.transform);
-        roomObject.GetComponent<Room>().IntializeRoom(room.id, room.players);
+        roomObject.GetComponent<Room>().IntializeRoom(room.id, room.players, player);
 
         string d = JsonMapper.ToJson(data);
         _socket.Emit("CreateRoom", new JSONObject(d));
@@ -80,7 +90,7 @@ public class RoomManager : MonoBehaviour {
         GameObject roomObject = Instantiate(_roomPrefab) as GameObject;
         roomObject.transform.name = room.id.ToString();
         roomObject.transform.SetParent(roomsObject.transform);
-        roomObject.GetComponent<Room>().IntializeRoom(room.id, room.players);
+        roomObject.GetComponent<Room>().IntializeRoom(room.id, room.players, room.players[0]);
         roomObject.SetActive(false);
     }
 
@@ -96,7 +106,7 @@ public class RoomManager : MonoBehaviour {
 
                 P player = new P();
 
-                player.name = "maarten";
+                player.name = currentName;
                 player.team = "u";
 
                 _rooms[i].players.Add(player);
@@ -105,6 +115,8 @@ public class RoomManager : MonoBehaviour {
                 data.playerName = player.name;
                 data.id = _rooms[i].id;
                 data.playersInRoom = _rooms[i].players;
+
+                roomsObject.transform.Find(_idField.text).GetComponent<Room>().Join(player);
 
                 string d = JsonMapper.ToJson(data);
                 _socket.Emit("JoinRoom", new JSONObject(d));

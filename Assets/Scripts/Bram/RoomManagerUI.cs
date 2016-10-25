@@ -4,18 +4,12 @@ using System.Collections;
 
 
 public class RoomManagerUI : MonoBehaviour {
-
-    private InputField inputFieldName;
-    private Text currentName;
-
     private GameObject CreateRoomPanel;
     private GameObject JoinRoomPanel;
     private GameObject ChooseNamePanel;
 
     void Start()
     {
-        inputFieldName = GameObject.Find("EnterName").GetComponent<InputField>();
-        currentName = GameObject.Find("CurrentName").GetComponent<Text>();
         CreateRoomPanel = GameObject.Find("CreateRoom");
         JoinRoomPanel = GameObject.Find("JoinRoom");
         ChooseNamePanel = GameObject.Find("Name");
@@ -35,12 +29,4 @@ public class RoomManagerUI : MonoBehaviour {
         ChooseNamePanel.SetActive(true);
     }
 
-    public void ChooseName()
-    {
-        if (inputFieldName.text != "")
-        {
-            currentName.text = "Current name: " + inputFieldName.text;
-            //GetComponent<RoomManager>().localPlayerName = inputFieldName.text;
-        }
-    }
 }
