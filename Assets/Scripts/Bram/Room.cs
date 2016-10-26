@@ -17,6 +17,12 @@ public class Room : MonoBehaviour {
 
     [SerializeField] private P localPlayer;
 
+    [SerializeField] int currentRobbersLength = 0;
+    [SerializeField] int currentCopsLength = 0;
+
+    [SerializeField] private GameObject robbersListObject;
+    [SerializeField] private GameObject copsListObject;
+
     void Start()
     {
         _socket = GameObject.Find("SocketIO").GetComponent<SocketIOComponent>();
@@ -69,17 +75,38 @@ public class Room : MonoBehaviour {
         playerObject.transform.SetParent(GameObject.Find("u").transform);
     }
 
-    public void ChangeTeam(string team)
+    public void ChangeTeamCops()
     {
-        GameObject playerObject = GameObject.Find(localPlayer.name.ToString());
-        playerObject.transform.SetParent(GameObject.Find(team.ToString()).transform);
-        localPlayer.team = team;
+        if (currentCopsLength < 2)
+        {
+            GameObject playerObject = GameObject.Find(localPlayer.name.ToString());
+            playerObject.transform.SetParent(GameObject.Find("c").transform);
+            localPlayer.team = "c";
 
-        P player = new P();
-        player.name = localPlayer.name + "," + _id;
-        player.team = team;
-        string d = JsonMapper.ToJson(player);
-        _socket.Emit("ChangeTeam", new JSONObject(d));
+            P player = new P();
+            player.name = localPlayer.name + "," + _id;
+            player.team = "c";
+            string d = JsonMapper.ToJson(player);
+            _socket.Emit("ChangeTeam", new JSONObject(d));
+        }
+
+    }
+
+    public void ChangeTeamRobbers()
+    {
+        if (currentRobbersLength < 2)
+        {
+            GameObject playerObject = GameObject.Find(localPlayer.name.ToString());
+            playerObject.transform.SetParent(GameObject.Find("r").transform);
+            localPlayer.team = "r";
+
+            P player = new P();
+            player.name = localPlayer.name + "," + _id;
+            player.team = "r";
+            string d = JsonMapper.ToJson(player);
+            _socket.Emit("ChangeTeam", new JSONObject(d));
+        }
+        CheckLimit();
     }
 
     void PlayerChangedTeam(SocketIOEvent e)
@@ -94,5 +121,23 @@ public class Room : MonoBehaviour {
                 GameObject.Find(player.name).transform.SetParent(GameObject.Find(player.team).transform);
             }
         }
+        CheckLimit();
     }
+
+    void CheckLimit()
+    {
+        foreach(Transform child in copsListObject.transform)
+        {
+            currentCopsLength = 0;
+            currentCopsLength++;
+            GameObject.Find("currentC").GetComponent<Text>().text = currentCopsLength + "/2";
+        }
+        foreach (Transform child in robbersListObject.transform)
+        {
+            currentRobbersLength = 0;
+            currentRobbersLength++;
+            GameObject.Find("currentR").GetComponent<Text>().text = currentRobbersLength + "/2";
+        }
+    }
+
 }
