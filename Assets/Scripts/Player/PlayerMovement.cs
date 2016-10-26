@@ -4,16 +4,16 @@ using System.Collections;
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerMovement : MonoBehaviour {
 	[SerializeField]
-	private float speed = 2f;
+	private float _speed = 2f;
 	[SerializeField]
-	private float runSpeed = 4f;
+	private float _runSpeed = 4f;
 
-	private float curSpeed {
+	private float _curSpeed {
 		set {
-			curSpeed = Mathf.Clamp (value, speed, runSpeed);
+			_curSpeed = Mathf.Clamp (value, _speed, _runSpeed);
 		}
 		get {
-			return curSpeed;
+			return _curSpeed;
 		}
 	}
 
@@ -25,6 +25,6 @@ public class PlayerMovement : MonoBehaviour {
 	
 	void Update () {
 		Vector2 movement = new Vector2 (Input.GetAxis ("Horizontal"), Input.GetAxis ("Vertical"));
-		rigidbody2d.velocity = movement * speed;
+		rigidbody2d.velocity = movement * _speed;
 	}
 }
