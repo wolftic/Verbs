@@ -29,6 +29,7 @@ public class Room : MonoBehaviour {
 
         _socket.On("PlayerJoined", PlayerJoined);
         _socket.On("PlayerChangedTeam", PlayerChangedTeam);
+        _socket.On("PlayerStopped", PlayerStopped);
     }
 
     public void IntializeRoom(int id, List<P> players, P localP)
@@ -38,10 +39,15 @@ public class Room : MonoBehaviour {
 
         localPlayer = localP;
 
-        GameObject playerObject = Instantiate(_playerPrefab) as GameObject;
-        playerObject.transform.name = _players[0].name;
-        playerObject.GetComponentInChildren<Text>().text = _players[0].name;
-        playerObject.transform.SetParent(GameObject.Find("u").transform);
+        for(int i = 0; i < players.Count; i++)
+        {
+            GameObject playerObject = Instantiate(_playerPrefab) as GameObject;
+            playerObject.transform.name = _players[i].name;
+            playerObject.GetComponentInChildren<Text>().text = _players[i].name;
+            playerObject.transform.SetParent(GameObject.Find("u").transform);
+        }
+
+        GameObject.Find("roomId").GetComponent<Text>().text = "ROOM ID: " + _id;
     }
 
     public void Join(P player)
@@ -89,7 +95,7 @@ public class Room : MonoBehaviour {
             string d = JsonMapper.ToJson(player);
             _socket.Emit("ChangeTeam", new JSONObject(d));
         }
-
+        CheckLimit();
     }
 
     public void ChangeTeamRobbers()
@@ -119,24 +125,42 @@ public class Room : MonoBehaviour {
             {
                 _players[i].team = player.team;
                 GameObject.Find(player.name).transform.SetParent(GameObject.Find(player.team).transform);
+                CheckLimit();
             }
         }
-        CheckLimit();
     }
 
     void CheckLimit()
     {
-        foreach(Transform child in copsListObject.transform)
+        currentCopsLength = 0;
+        currentRobbersLength = 0;
+        for (int i = 0; i < _players.Count; i++)
         {
-            currentCopsLength = 0;
-            currentCopsLength++;
-            GameObject.Find("currentC").GetComponent<Text>().text = currentCopsLength + "/2";
+            if (_players[i].team == "c")
+            {
+                currentCopsLength++;
+                GameObject.Find("currentC").GetComponent<Text>().text = currentCopsLength + "/2";
+                GameObject.Find("currentR").GetComponent<Text>().text = currentRobbersLength + "/2";
+            }
+            if (_players[i].team == "r")
+            {
+                currentRobbersLength++;
+                GameObject.Find("currentR").GetComponent<Text>().text = currentRobbersLength + "/2";
+                GameObject.Find("currentC").GetComponent<Text>().text = currentCopsLength + "/2";
+            }
         }
-        foreach (Transform child in robbersListObject.transform)
+    }
+
+    void PlayerStopped(SocketIOEvent e)
+    {
+        Data data = JsonMapper.ToObject<Data>(e.data.ToString());
+        for(int i = 0; i < _players.Count; i++)
         {
-            currentRobbersLength = 0;
-            currentRobbersLength++;
-            GameObject.Find("currentR").GetComponent<Text>().text = currentRobbersLength + "/2";
+            if(_players[i].name == data.playerName)
+            {
+                _players.RemoveAt(i);
+                Destroy(GameObject.Find(_players[i].name));
+            }
         }
     }
 

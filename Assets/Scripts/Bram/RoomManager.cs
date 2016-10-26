@@ -91,7 +91,7 @@ public class RoomManager : MonoBehaviour {
         roomObject.transform.name = room.id.ToString();
         roomObject.transform.SetParent(roomsObject.transform);
         roomObject.GetComponent<Room>().IntializeRoom(room.id, room.players, room.players[0]);
-        roomObject.SetActive(false);
+        roomObject.GetComponent<Canvas>().enabled = false;
     }
 
     void JoinRoom()
@@ -102,7 +102,7 @@ public class RoomManager : MonoBehaviour {
             {
                 _UI.ToRoom();
 
-                roomsObject.transform.Find(_idField.text).gameObject.SetActive(true);
+                roomsObject.transform.Find(_idField.text).gameObject.GetComponent<Canvas>().enabled = true;
 
                 P player = new P();
 
