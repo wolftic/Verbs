@@ -10,6 +10,7 @@ io.on('connection', function(socket){
 	
 	var currentClient;
 		
+		
 	//TODO: als een speler nieuw start add alle rooms die al aktief zijn
 	
 	console.log("Socket: " + socket.id + " Connected");
