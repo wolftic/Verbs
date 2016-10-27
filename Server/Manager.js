@@ -9,7 +9,7 @@ var rooms = [];
 io.on('connection', function(socket){
 	
 	var currentClient;
-	
+		
 	//TODO: als een speler nieuw start add alle rooms die al aktief zijn
 	
 	console.log("Socket: " + socket.id + " Connected");
@@ -21,9 +21,14 @@ io.on('connection', function(socket){
 			players: dataG.playersInRoom,
 		}
 		
-		currentClient = room.players[0].name;
+		currentClient = {
+			id: socket.id,
+			name: dataG.playerName,
+		}
+		console.log(currentClient);
+	
 		
-		console.log(room.id);
+		//console.log(room.id);
 		
 		rooms.push(room);
 		
@@ -40,12 +45,17 @@ io.on('connection', function(socket){
 	socket.on("JoinRoom", function(dataG){
 		socket.join(dataG.id);
 		
-		currentClient = dataG.playerName;
+		currentClient = {
+			id: socket.id,
+			name: dataG.playerName,
+		}
+		
+		console.log(currentClient);
 		
 		for(var i = 0; i < rooms.length; i++){
 			if(dataG.id == rooms[i].id){
 				rooms[i].players = dataG.playersInRoom;
-				console.log(rooms[i].players);
+				//console.log(rooms[i].players);
 			}
 		}
 		
@@ -59,7 +69,7 @@ io.on('connection', function(socket){
 	});
 	
 	socket.on("ChangeTeam", function(dataG){
-		console.log(dataG.name);
+		//console.log(dataG.name);
 		var res = dataG.name.split(",");
 		
 		var dataS = {
@@ -74,8 +84,9 @@ io.on('connection', function(socket){
 		console.log("Socket: " + socket.id + " Disconnected");
 		
 		var dataS = {
-			playerName: currentClient,
+			playerName: currentClient.name,
 		}
+		console.log(dataS);
 		
 		socket.broadcast.emit("PlayerStopped", dataS);
 	});

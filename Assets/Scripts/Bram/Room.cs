@@ -154,12 +154,14 @@ public class Room : MonoBehaviour {
     void PlayerStopped(SocketIOEvent e)
     {
         Data data = JsonMapper.ToObject<Data>(e.data.ToString());
-        for(int i = 0; i < _players.Count; i++)
+        print(data.playerName);
+        for (int i = 0; i < _players.Count; i++)
         {
             if(_players[i].name == data.playerName)
             {
                 _players.RemoveAt(i);
-                Destroy(GameObject.Find(_players[i].name));
+                Destroy(GameObject.Find(data.playerName));
+                CheckLimit();
             }
         }
     }
