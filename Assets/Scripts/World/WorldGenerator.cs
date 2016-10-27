@@ -21,6 +21,8 @@ public class WorldGenerator : MonoBehaviour {
 	private Pavement _pavementTile;
 	[SerializeField]
 	private Pavement _pavementUnderTile;
+	[SerializeField]
+	private PinPointLocation _pinPointLocation;
 
 	[Header("Settings")]
 	[SerializeField]
@@ -29,11 +31,16 @@ public class WorldGenerator : MonoBehaviour {
 	private GameObject _map;
 
 	private string[][] _placeholderBlocks;
+	private GameObject[][] _pinPointLocationGameobjects;
 	private int _multiplier;
+	private GameObject _pinPointLocations;
 
 	void Start () {
-		_map = new GameObject ("__map");
+		_map = new GameObject ("MAP");
+		_pinPointLocations = new GameObject ("PinPointLocations");
+		_pinPointLocations.transform.SetParent (_map.transform);
 		_multiplier = Mathf.RoundToInt (_settings.blockSize + _settings.pavementWidth * 2 + _settings.roadWidth * 2);
+
 		int x = Mathf.RoundToInt(_multiplier * _settings.blocks.x);
 		int y = Mathf.RoundToInt(_multiplier * _settings.blocks.y);
 
@@ -41,32 +48,27 @@ public class WorldGenerator : MonoBehaviour {
 		for (int i = 0; i < _placeholderBlocks.Length; i++) {
 			_placeholderBlocks [i] = new string[y];
 		}
+			
+		_pinPointLocationGameobjects = new string[_settings.blocks.x * 2][];
+		for (int i = 0; i < _placeholderBlocks.Length; i++) {
+			_pinPointLocationGameobjects [i] = new string[_settings.blocks.y * 2];
+		}
 
 		GeneratePavements ();
 		GenerateRoads ();
 		StartCoroutine( LayoutMap ());
 	}
-		
-	void Update () {
-	
-	}
 
+	/// <summary>
+	/// Generates the roads.
+	/// </summary>
 	void GenerateRoads() {
 		for (int blockX = 0; blockX < _settings.blocks.x; blockX++) {
 			for (int blockY = 0; blockY < _settings.blocks.y; blockY++) {
-				//Debug.Log("Roads generated at: [" + blockX + ", " + blockY + "]");
-				
 				for (int x = 0; x < _multiplier; x++) {
 					for (int y = 0; y < _multiplier; y++) {
 						if (((y >= _settings.roadWidth) && (y < _settings.roadWidth + _settings.blockSize + (_settings.pavementWidth * 2))) && ((x >= _settings.roadWidth) && (x < _settings.roadWidth + _settings.blockSize + (_settings.pavementWidth * 2))))
 							continue;
-
-						//Road road = Instantiate (_roadTile) as Road;
-
-						//road.transform.position = new Vector2 (x + (_multiplier * blockX), y + (_multiplier * blockY));
-
-						//road.transform.SetParent (roads.transform);
-
 						_placeholderBlocks[x + (_multiplier * blockX)][y + (_multiplier * blockY)]  = "ROAD";
 					}
 				}
@@ -75,36 +77,53 @@ public class WorldGenerator : MonoBehaviour {
 		}
 	}
 
+	/// <summary>
+	/// Generates the pavements.
+	/// </summary>
 	void GeneratePavements() {
 		for (int blockX = 0; blockX < _settings.blocks.x; blockX++) {
 			for (int blockY = 0; blockY < _settings.blocks.y; blockY++) {
-				//Debug.Log("Pavements generated at: [" + blockX + ", " + blockY + "]");
-
 				for (int x = 0; x < _multiplier; x++) {
 					for (int y = 0; y < _multiplier; y++) {
+						placePinPoint (x, y, blockX, blockY);
+
 						if (((y >= _settings.roadWidth + _settings.pavementWidth)
 						    && (y < _settings.roadWidth + _settings.blockSize + (_settings.pavementWidth * 2) - _settings.pavementWidth))
 						    && ((x >= _settings.roadWidth + _settings.pavementWidth)
 						    && (x < _settings.roadWidth + _settings.blockSize + (_settings.pavementWidth * 2) - _settings.pavementWidth)))
 							continue;
 
-						//Pavement pavement = Instantiate (_pavementTile) as Pavement;
-
-						//new Vector2 (x + (_multiplier * blockX), y + (_multiplier * blockY));
-
-						//pavement.transform.SetParent (pavements.transform);
-
 						if (y != _settings.roadWidth) { 
 							_placeholderBlocks [x + (_multiplier * blockX)] [y + (_multiplier * blockY)] = "PAVEMENT"; 
 						} 
 						else { 
 							_placeholderBlocks [x + (_multiplier * blockX)] [y + (_multiplier * blockY)] = "PAVEMENT_UNDER"; 
-							Debug.Log (y);
 						}
 					}
 				}
 
 			}
+		}
+	}
+
+	/// <summary>
+	/// Checks first if should place a pinpoint, if so then places one.
+	/// </summary>
+	/// <param name="x">The x coordinate.</param>
+	/// <param name="y">The y coordinate.</param>
+	/// <param name="blockX">Block x.</param>
+	/// <param name="blockY">Block y.</param>
+	void placePinPoint(int x, int y, int blockX, int blockY) {
+		if (x == 0 && y == 0
+			|| x == 0 && y == _multiplier
+			|| x == _multiplier && y == 0
+			|| x == _multiplier && y == _multiplier
+			|| x == _multiplier - _settings.pavementWidth - _settings.roadWidth - _settings.pavementWidth / 2 && y == 0
+			|| x == 0 && y == _multiplier - _settings.pavementWidth - _settings.roadWidth - _settings.pavementWidth / 2
+			|| x == _multiplier - _settings.pavementWidth - _settings.roadWidth - _settings.pavementWidth / 2 && y == _multiplier - _settings.pavementWidth - _settings.roadWidth - _settings.pavementWidth / 2) {
+			PinPointLocation pinPoint = Instantiate (_pinPointLocation) as PinPointLocation;
+			pinPoint.gameObject.transform.position = new Vector2 (x + (_multiplier * blockX) + _settings.pavementWidth, y + (_multiplier * blockY) + _settings.pavementWidth);
+			pinPoint.gameObject.transform.SetParent (_pinPointLocations.transform);
 		}
 	}
 
@@ -136,6 +155,9 @@ public class WorldGenerator : MonoBehaviour {
 		}
 	}*/
 
+	/// <summary>
+	/// Layouts the map.
+	/// </summary>
 	IEnumerator LayoutMap () {
 		GameObject pavements = new GameObject ("Pavement");
 		pavements.transform.SetParent (_map.transform);
