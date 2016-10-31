@@ -1,8 +1,10 @@
 ﻿using UnityEngine;
+using UnityEngine.Events;
 //using System;
 using System.Collections;
 using System.Collections.Generic;
 
+[RequireComponent(typeof(CitizenSpawner))]
 public class WorldGenerator : MonoBehaviour {
 	[Header("Prefabs")]
 	[SerializeField]
@@ -28,17 +30,23 @@ public class WorldGenerator : MonoBehaviour {
 	[SerializeField]
 	private Settings _settings;
 
+	[Header("Events")]
+	[SerializeField]
+	private UnityEvent OnMapLoadDone;
+
 	private GameObject _map;
 
 	private string[][] _placeholderBlocks;
 	private GameObject[][] _pinPointLocationGameobjects;
 	private int _multiplier;
 	private GameObject _pinPointLocations;
+	private CitizenSpawner _citizenSpawner;
 
 	void Start () {
 		_map = new GameObject ("MAP");
 		_pinPointLocations = new GameObject ("PinPointLocations");
 		_pinPointLocations.transform.SetParent (_map.transform);
+		_citizenSpawner = GetComponent<CitizenSpawner> ();
 		_multiplier = Mathf.RoundToInt (_settings.blockSize + _settings.pavementWidth * 2 + _settings.roadWidth * 2);
 
 		int x = Mathf.RoundToInt(_multiplier * _settings.blocks.x);
@@ -49,11 +57,13 @@ public class WorldGenerator : MonoBehaviour {
 			_placeholderBlocks [i] = new string[y];
 		}
 			
-		_pinPointLocationGameobjects = new string[_settings.blocks.x * 2][];
-		for (int i = 0; i < _placeholderBlocks.Length; i++) {
-			_pinPointLocationGameobjects [i] = new string[_settings.blocks.y * 2];
+		_pinPointLocationGameobjects = new GameObject[Mathf.RoundToInt(_settings.blocks.x * 2)][];
+		for (int i = 0; i < _pinPointLocationGameobjects.Length; i++) {
+			_pinPointLocationGameobjects [i] = new GameObject[Mathf.RoundToInt(_settings.blocks.y * 2)];
 		}
 
+		OnMapLoadDone.AddListener (_citizenSpawner.GetPinPointLocations);
+		OnMapLoadDone.AddListener (_citizenSpawner.SpawnCitizens);
 		GeneratePavements ();
 		GenerateRoads ();
 		StartCoroutine( LayoutMap ());
@@ -124,6 +134,7 @@ public class WorldGenerator : MonoBehaviour {
 			PinPointLocation pinPoint = Instantiate (_pinPointLocation) as PinPointLocation;
 			pinPoint.gameObject.transform.position = new Vector2 (x + (_multiplier * blockX) + _settings.pavementWidth, y + (_multiplier * blockY) + _settings.pavementWidth);
 			pinPoint.gameObject.transform.SetParent (_pinPointLocations.transform);
+			pinPoint.maxDist = _multiplier - _settings.roadWidth * 2;
 		}
 	}
 
@@ -217,6 +228,7 @@ public class WorldGenerator : MonoBehaviour {
 		}
 
 		Debug.Log (Time.time - startTime);
+		OnMapLoadDone.Invoke ();
 
 		yield break;
 	}
