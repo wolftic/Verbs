@@ -11,10 +11,6 @@ public class CitizenMovement : MonoBehaviour {
 	[SerializeField]
 	private GameObject[] _pinPointLocations;
 
-<<<<<<< HEAD
-	void Start () {
-		_pinPointLocations = GameObject.FindGameObjectsWithTag ("PinPointLocation");
-=======
 	public PinPointLocation goToLocation;
 
 	void Start () {
@@ -24,14 +20,10 @@ public class CitizenMovement : MonoBehaviour {
 		}
 
 		transform.position = goToLocation.transform.position;
->>>>>>> origin/master
 		_rigidbody2d = GetComponent<Rigidbody2D> ();
 	}
 
 	void Update () {
-<<<<<<< HEAD
-	
-=======
 		WalkTo (goToLocation);
 	}
 
@@ -67,6 +59,5 @@ public class CitizenMovement : MonoBehaviour {
 		} else {
 			goToLocation = ppl;
 		}
->>>>>>> origin/master
 	}
 }

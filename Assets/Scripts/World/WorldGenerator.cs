@@ -40,19 +40,13 @@ public class WorldGenerator : MonoBehaviour {
 	private GameObject[][] _pinPointLocationGameobjects;
 	private int _multiplier;
 	private GameObject _pinPointLocations;
-<<<<<<< HEAD
-=======
 	private CitizenSpawner _citizenSpawner;
->>>>>>> origin/master
 
 	void Start () {
 		_map = new GameObject ("MAP");
 		_pinPointLocations = new GameObject ("PinPointLocations");
 		_pinPointLocations.transform.SetParent (_map.transform);
-<<<<<<< HEAD
-=======
 		_citizenSpawner = GetComponent<CitizenSpawner> ();
->>>>>>> origin/master
 		_multiplier = Mathf.RoundToInt (_settings.blockSize + _settings.pavementWidth * 2 + _settings.roadWidth * 2);
 
 		int x = Mathf.RoundToInt(_multiplier * _settings.blocks.x);
@@ -63,15 +57,9 @@ public class WorldGenerator : MonoBehaviour {
 			_placeholderBlocks [i] = new string[y];
 		}
 			
-<<<<<<< HEAD
-		_pinPointLocationGameobjects = new string[_settings.blocks.x * 2][];
-		for (int i = 0; i < _placeholderBlocks.Length; i++) {
-			_pinPointLocationGameobjects [i] = new string[_settings.blocks.y * 2];
-=======
 		_pinPointLocationGameobjects = new GameObject[Mathf.RoundToInt(_settings.blocks.x * 2)][];
 		for (int i = 0; i < _pinPointLocationGameobjects.Length; i++) {
 			_pinPointLocationGameobjects [i] = new GameObject[Mathf.RoundToInt(_settings.blocks.y * 2)];
->>>>>>> origin/master
 		}
 
 		OnMapLoadDone.AddListener (_citizenSpawner.GetPinPointLocations);
@@ -146,10 +134,7 @@ public class WorldGenerator : MonoBehaviour {
 			PinPointLocation pinPoint = Instantiate (_pinPointLocation) as PinPointLocation;
 			pinPoint.gameObject.transform.position = new Vector2 (x + (_multiplier * blockX) + _settings.pavementWidth, y + (_multiplier * blockY) + _settings.pavementWidth);
 			pinPoint.gameObject.transform.SetParent (_pinPointLocations.transform);
-<<<<<<< HEAD
-=======
 			pinPoint.maxDist = _multiplier - _settings.roadWidth * 2;
->>>>>>> origin/master
 		}
 	}
 
