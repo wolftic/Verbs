@@ -23,6 +23,11 @@ public class Room : MonoBehaviour {
     [SerializeField] private GameObject robbersListObject;
     [SerializeField] private GameObject copsListObject;
 
+    [SerializeField] private GameObject _player;
+    [SerializeField] private GameObject _otherPlayer;
+
+    [SerializeField] private GameObject _startButton;
+
     void Start()
     {
         _socket = GameObject.Find("SocketIO").GetComponent<SocketIOComponent>();
@@ -30,8 +35,15 @@ public class Room : MonoBehaviour {
         _socket.On("PlayerJoined", PlayerJoined);
         _socket.On("PlayerChangedTeam", PlayerChangedTeam);
         _socket.On("PlayerStopped", PlayerStopped);
+        _socket.On("OtherStarted", OtherStarted);
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="players"></param>
+    /// <param name="localP"></param>
     public void IntializeRoom(int id, List<P> players, P localP)
     {
         _id = id;
@@ -50,6 +62,10 @@ public class Room : MonoBehaviour {
         GameObject.Find("roomId").GetComponent<Text>().text = "ROOM ID: " + _id;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="player"></param>
     public void Join(P player)
     {
         localPlayer = player;
@@ -60,9 +76,13 @@ public class Room : MonoBehaviour {
         playerObject.transform.SetParent(GameObject.Find("u").transform);
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="e"></param>
     void PlayerJoined(SocketIOEvent e)
     {
-        Data data = JsonMapper.ToObject<Data>(e.data.ToString());
+        Data data = JsonMapper.ToObject<Data>(e.data.ToString()); //adnkfalk
         P player = new P();
 
         for (int i = 0; i < data.playersInRoom.Count; i++)
@@ -81,6 +101,9 @@ public class Room : MonoBehaviour {
         playerObject.transform.SetParent(GameObject.Find("u").transform);
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public void ChangeTeamCops()
     {
         if (currentCopsLength < 2)
@@ -98,6 +121,9 @@ public class Room : MonoBehaviour {
         CheckLimit();
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public void ChangeTeamRobbers()
     {
         if (currentRobbersLength < 2)
@@ -115,6 +141,10 @@ public class Room : MonoBehaviour {
         CheckLimit();
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="e"></param>
     void PlayerChangedTeam(SocketIOEvent e)
     {
         P player = JsonMapper.ToObject<P>(e.data.ToString());
@@ -130,6 +160,9 @@ public class Room : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     void CheckLimit()
     {
         currentCopsLength = 0;
@@ -151,6 +184,37 @@ public class Room : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    public void StartGame()
+    {
+        for (int i = 0; i < _players.Count; i++)
+        {
+            if(_players[i].name == localPlayer.name)
+            {
+                GameObject p = Instantiate(_player) as GameObject;
+                p.GetComponent<PlayerMovement>().name = _players[i].name;
+                p.transform.name = _players[i].name;
+            } else
+            {
+                GameObject oP = Instantiate(_otherPlayer) as GameObject;
+                oP.GetComponent<OtherPlayerMovement>().name = _players[i].name;
+                oP.transform.name = _players[i].name;
+            }
+        }
+        _socket.Emit("StartGame");
+    }
+
+    void OtherStarted(SocketIOEvent e)
+    {
+        StartGame();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="e"></param>
     void PlayerStopped(SocketIOEvent e)
     {
         Data data = JsonMapper.ToObject<Data>(e.data.ToString());

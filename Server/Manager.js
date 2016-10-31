@@ -91,6 +91,23 @@ io.on('connection', function(socket){
 		
 		socket.broadcast.emit("PlayerStopped", dataS);
 	});
+	
+	socket.on("StartGame", function(){
+		socket.broadcast.emit("OtherStarted");
+	});
+	
+	//INGAME
+	socket.on("Move",function(dataG){
+		
+		var dataS = {
+			name: dataG.name,
+			x: dataG.x,
+			y: dataG.y,
+			z: dataG.z,
+		}
+		//TODO: alleen goede room
+		socket.emit("OtherMove", dataS);
+	});
 });
 
 
