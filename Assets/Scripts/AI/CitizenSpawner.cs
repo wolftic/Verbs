@@ -3,7 +3,7 @@ using System.Collections;
 
 public class CitizenSpawner : MonoBehaviour {
 	[SerializeField]
-	private CitizenMovement _citizen;
+	private CitizenMovement[] _citizen;
 
 	[SerializeField]
 	private int _amountOfCitizens = 1;
@@ -34,7 +34,8 @@ public class CitizenSpawner : MonoBehaviour {
 	}
 
 	private void SpawnCitizen(int id) {
-		CitizenMovement citizen = Instantiate (_citizen) as CitizenMovement;
+		int c = Mathf.RoundToInt (Random.Range (0, _citizen.Length));
+		CitizenMovement citizen = Instantiate (_citizen[c]) as CitizenMovement;
 		int r = Mathf.RoundToInt(Random.Range (0, pinPointLocations.Length));
 
 		citizen.goToLocation = pinPointLocations [r];
