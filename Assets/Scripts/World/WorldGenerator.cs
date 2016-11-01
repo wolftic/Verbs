@@ -25,6 +25,16 @@ public class WorldGenerator : MonoBehaviour {
 	private Pavement _pavementUnderTile;
 	[SerializeField]
 	private PinPointLocation _pinPointLocation;
+	[SerializeField]
+	private GameObject trafficLight;
+	[SerializeField]
+	private GameObject light;
+	[SerializeField]
+	private GameObject busStop;
+	[SerializeField]
+	private GameObject[] bins;
+	[SerializeField]
+	private GameObject[] props;
 
 	[Header("Settings")]
 	[SerializeField]
@@ -96,12 +106,20 @@ public class WorldGenerator : MonoBehaviour {
 				for (int x = 0; x < _multiplier; x++) {
 					for (int y = 0; y < _multiplier; y++) {
 						placePinPoint (x, y, blockX, blockY);
+						placeProp (x, y, blockX, blockY);
 
 						if (((y >= _settings.roadWidth + _settings.pavementWidth)
 						    && (y < _settings.roadWidth + _settings.blockSize + (_settings.pavementWidth * 2) - _settings.pavementWidth))
 						    && ((x >= _settings.roadWidth + _settings.pavementWidth)
 						    && (x < _settings.roadWidth + _settings.blockSize + (_settings.pavementWidth * 2) - _settings.pavementWidth)))
 							continue;
+
+						/*float r = Random.Range (0, 100);
+						if (r <= _settings.propSpawnPercentage) {
+							int rInt = Mathf.RoundToInt (Random.Range (0, props.Length));
+							GameObject prop = Instantiate(props[rInt]);
+							prop.transform.position = new Vector2 (x + (_multiplier * blockX), y + (_multiplier * blockY));
+						}*/
 
 						if (y != _settings.roadWidth) { 
 							_placeholderBlocks [x + (_multiplier * blockX)] [y + (_multiplier * blockY)] = "PAVEMENT"; 
@@ -116,6 +134,36 @@ public class WorldGenerator : MonoBehaviour {
 		}
 	}
 
+	void placeProp(int x, int y, int blockX, int blockY) {
+		if (x == Mathf.RoundToInt (_multiplier / 2) && y == _settings.pavementWidth) {
+			GameObject stop = Instantiate (busStop);
+			stop.transform.position = new Vector2 (x + (_multiplier * blockX), y + (_multiplier * blockY));
+		}
+
+		if (x == 0 && y == Mathf.RoundToInt(_multiplier/2)  - _settings.pavementWidth) {
+			GameObject nLight = Instantiate (light);
+			nLight.transform.position = new Vector2 (x + (_multiplier * blockX) + _settings.pavementWidth, y + (_multiplier * blockY) + _settings.pavementWidth);
+		}
+
+		if (x == _multiplier - _settings.pavementWidth - _settings.roadWidth - _settings.pavementWidth / 2 
+			&& y == _multiplier - _settings.pavementWidth - _settings.roadWidth - _settings.pavementWidth / 2) {
+			GameObject tLight = Instantiate (trafficLight);
+			tLight.transform.position = new Vector2 (x + (_multiplier * blockX) + _settings.pavementWidth, y + (_multiplier * blockY) + _settings.pavementWidth);
+		}
+
+		if (x == 0 && y == 0) {
+			int rInt = Mathf.RoundToInt (Random.Range (0, props.Length));
+			GameObject prop = Instantiate (props[rInt]);
+			prop.transform.position = new Vector2 (x + (_multiplier * blockX) + _settings.pavementWidth, y + (_multiplier * blockY) + _settings.pavementWidth);
+		}
+
+		if (x == _multiplier - _settings.pavementWidth - _settings.roadWidth - _settings.pavementWidth / 2 && y == 0) {
+			int rInt = Mathf.RoundToInt (Random.Range (0, bins.Length));
+			GameObject bin = Instantiate (bins[rInt]);
+			bin.transform.position = new Vector2 (x + (_multiplier * blockX) + _settings.pavementWidth, y + (_multiplier * blockY) + _settings.pavementWidth);
+		}
+	}
+
 	/// <summary>
 	/// Checks first if should place a pinpoint, if so then places one.
 	/// </summary>
@@ -124,13 +172,13 @@ public class WorldGenerator : MonoBehaviour {
 	/// <param name="blockX">Block x.</param>
 	/// <param name="blockY">Block y.</param>
 	void placePinPoint(int x, int y, int blockX, int blockY) {
-		if (x == 0 && y == 0
-			|| x == 0 && y == _multiplier
-			|| x == _multiplier && y == 0
+		if (x == 1 && y == 1
+			|| x == 1 && y == _multiplier
+			|| x == _multiplier && y == 1
 			|| x == _multiplier && y == _multiplier
-			|| x == _multiplier - _settings.pavementWidth - _settings.roadWidth - _settings.pavementWidth / 2 && y == 0
-			|| x == 0 && y == _multiplier - _settings.pavementWidth - _settings.roadWidth - _settings.pavementWidth / 2
-			|| x == _multiplier - _settings.pavementWidth - _settings.roadWidth - _settings.pavementWidth / 2 && y == _multiplier - _settings.pavementWidth - _settings.roadWidth - _settings.pavementWidth / 2) {
+			|| x == _multiplier - _settings.pavementWidth - _settings.roadWidth - _settings.pavementWidth / 2 - 1 && y == 1
+			|| x == 1 && y == _multiplier - _settings.pavementWidth - _settings.roadWidth - _settings.pavementWidth / 2 - 1
+			|| x == _multiplier - _settings.pavementWidth - _settings.roadWidth - _settings.pavementWidth / 2 - 1 && y == _multiplier - _settings.pavementWidth - _settings.roadWidth - _settings.pavementWidth / 2 - 1) {
 			PinPointLocation pinPoint = Instantiate (_pinPointLocation) as PinPointLocation;
 			pinPoint.gameObject.transform.position = new Vector2 (x + (_multiplier * blockX) + _settings.pavementWidth, y + (_multiplier * blockY) + _settings.pavementWidth);
 			pinPoint.gameObject.transform.SetParent (_pinPointLocations.transform);
@@ -239,5 +287,6 @@ public class WorldGenerator : MonoBehaviour {
 		public int blockSize;
 		public int roadWidth;
 		public int pavementWidth;
+		public float propSpawnPercentage;
 	}
 }

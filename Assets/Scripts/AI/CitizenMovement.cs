@@ -31,7 +31,7 @@ public class CitizenMovement : MonoBehaviour {
 
 	void WalkTo(PinPointLocation loc) {
 		float dist = Vector3.Distance (transform.position, loc.transform.position);
-		if (dist < 1f) {
+		if (dist < .25f) {
 			ChooseNextPinPoint ();
 			return;
 		} else {

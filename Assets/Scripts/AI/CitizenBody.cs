@@ -2,8 +2,10 @@
 using System.Collections;
 
 public class CitizenBody : MonoBehaviour {
+	[Header("Body")]
 	[SerializeField]
 	private Sprite _left, _up, _down;
+	[Header("Head")]
 	[SerializeField]
 	private Sprite _left_head, _up_head, _down_head;
 
