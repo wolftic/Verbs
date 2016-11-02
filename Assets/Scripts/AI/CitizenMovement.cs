@@ -7,6 +7,7 @@ public class CitizenMovement : MonoBehaviour {
 	private float _speed = 2f;
 
 	private Rigidbody2D _rigidbody2d;
+	private CitizenBody _citizenBody;
 
 	[SerializeField]
 	private GameObject[] _pinPointLocations;
@@ -21,6 +22,7 @@ public class CitizenMovement : MonoBehaviour {
 
 		transform.position = goToLocation.transform.position;
 		_rigidbody2d = GetComponent<Rigidbody2D> ();
+		_citizenBody = GetComponent<CitizenBody> ();
 	}
 
 	void Update () {
@@ -29,7 +31,7 @@ public class CitizenMovement : MonoBehaviour {
 
 	void WalkTo(PinPointLocation loc) {
 		float dist = Vector3.Distance (transform.position, loc.transform.position);
-		if (dist < 1f) {
+		if (dist < .25f) {
 			ChooseNextPinPoint ();
 			return;
 		} else {
@@ -57,6 +59,7 @@ public class CitizenMovement : MonoBehaviour {
 			ChooseNextPinPoint ();
 			return;
 		} else {
+			_citizenBody.direction = rand;
 			goToLocation = ppl;
 		}
 	}
