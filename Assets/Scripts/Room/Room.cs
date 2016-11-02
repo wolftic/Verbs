@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +28,8 @@ public class Room : MonoBehaviour {
     [SerializeField] private GameObject _otherPlayer;
 
     [SerializeField] private GameObject _startButton;
+
+    [SerializeField] private GameObject _GameManager;
 
     void Start()
     {
@@ -187,28 +190,30 @@ public class Room : MonoBehaviour {
     /// <summary>
     /// 
     /// </summary>
-    public void StartGame()
+    public void StartGame(bool l)
     {
+        GameObject gm = Instantiate(_GameManager) as GameObject;
         for (int i = 0; i < _players.Count; i++)
         {
-            if(_players[i].name == localPlayer.name)
-            {
-                GameObject p = Instantiate(_player) as GameObject;
-                p.GetComponent<PlayerMovement>().name = _players[i].name;
-                p.transform.name = _players[i].name;
-            } else
-            {
-                GameObject oP = Instantiate(_otherPlayer) as GameObject;
-                oP.GetComponent<OtherPlayerMovement>().name = _players[i].name;
-                oP.transform.name = _players[i].name;
-            }
+            PlayerData player = new PlayerData();
+            player.name = _players[i].name;
+            gm.GetComponent<GameManager>()._playersInGame.Add(player);
         }
-        _socket.Emit("StartGame");
+        PlayerData p = new PlayerData();
+        p.name = localPlayer.name;
+        gm.GetComponent<GameManager>().pd = p;
+
+        SceneManager.LoadScene("Lorenzo 1");
+        gm.GetComponent<GameManager>().StartGame();
+        if (l)
+        {
+            _socket.Emit("StartGame");
+        }
     }
 
     void OtherStarted(SocketIOEvent e)
     {
-        StartGame();
+        StartGame(false);
     }
 
     /// <summary>

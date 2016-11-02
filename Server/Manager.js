@@ -106,7 +106,7 @@ io.on('connection', function(socket){
 			z: dataG.z,
 		}
 		//TODO: alleen goede room
-		socket.emit("OtherMove", dataS);
+		socket.broadcast.emit("OtherMove", dataS);
 	});
 });
 
