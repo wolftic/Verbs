@@ -1,14 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Hideout : MonoBehaviour {
-
-	// Use this for initialization
+public class Hideout : Building {
+	
 	void Start () {
 	
 	}
 	
-	// Update is called once per frame
 	void Update () {
 	
 	}

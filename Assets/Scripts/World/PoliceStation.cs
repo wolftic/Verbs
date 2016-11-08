@@ -1,14 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class PoliceStation : MonoBehaviour {
-
-	// Use this for initialization
+public class PoliceStation : Building {
+	
 	void Start () {
 	
 	}
-	
-	// Update is called once per frame
+
 	void Update () {
 	
 	}

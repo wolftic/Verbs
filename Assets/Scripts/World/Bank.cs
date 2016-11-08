@@ -1,14 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Bank : MonoBehaviour {
+public class Bank : Building {
+	public float moneyInBank;
+	[SerializeField]
+	private float minMoneyInBank, maxMoneyInBank;
 
-	// Use this for initialization
+
 	void Start () {
-	
+		moneyInBank = Random.Range (minMoneyInBank, maxMoneyInBank);
 	}
-	
-	// Update is called once per frame
+
 	void Update () {
 	
 	}
