@@ -197,14 +197,16 @@ public class Room : MonoBehaviour {
         {
             PlayerData player = new PlayerData();
             player.name = _players[i].name;
+            player.team = _players[i].team;
             gm.GetComponent<GameManager>()._playersInGame.Add(player);
         }
         PlayerData p = new PlayerData();
         p.name = localPlayer.name;
+        p.team = localPlayer.team;
         gm.GetComponent<GameManager>().pd = p;
 
         SceneManager.LoadScene("Lorenzo 1");
-        gm.GetComponent<GameManager>().StartGame();
+        gm.GetComponent<GameManager>().gameStartTime = Time.time;
         if (l)
         {
             _socket.Emit("StartGame");

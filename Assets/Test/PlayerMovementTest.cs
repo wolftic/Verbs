@@ -12,6 +12,7 @@ public class PlayerMovementTest : MonoBehaviour {
 
     [SerializeField] private float _speed = 5;
     [SerializeField] private bool _facingRight;
+    public string name;
 
     void Start()
     {
@@ -29,7 +30,7 @@ public class PlayerMovementTest : MonoBehaviour {
         if (_multiPlayer)
         {
             PlayerData playerPosition = new PlayerData();
-            playerPosition.name = "bram";
+            playerPosition.name = name;
             playerPosition.x = transform.position.x;
             playerPosition.y = transform.position.y;
             playerPosition.z = transform.position.z;
@@ -37,8 +38,6 @@ public class PlayerMovementTest : MonoBehaviour {
             string jsonPos = JsonMapper.ToJson(playerPosition);
 
             _socket.Emit("SendPlayerData", new JSONObject(jsonPos));
-
-            Debug.Log(playerPosition.name);
         }
     }
 

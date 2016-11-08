@@ -2,11 +2,16 @@
 using System.Collections;
 
 public class OtherPlayerMovement : MonoBehaviour {
-    public string name;
-    private float _speed = 1;
+    [SerializeField]
+    private Vector3 currentPos;
 
-    public void GoTo(Vector3 v3)
+    public void Move(Vector3 pos)
     {
-        transform.position = Vector3.Lerp(transform.position, v3, _speed * Time.deltaTime);
+        currentPos = pos;
+    }
+
+    void Update()
+    {
+        transform.position = Vector3.Lerp(transform.position, currentPos, 3 * Time.deltaTime);
     }
 }

@@ -2,7 +2,7 @@ var io = require('socket.io')({
 	transports: ['websocket'],
 });
 
-io.attach(8080);
+io.attach(3002);
 
 var rooms = [];
 
@@ -97,7 +97,7 @@ io.on('connection', function(socket){
 	});
 	
 	//INGAME
-	socket.on("Move",function(dataG){
+	socket.on("SendPlayerData",function(dataG){
 		
 		var dataS = {
 			name: dataG.name,

@@ -11,8 +11,9 @@ public class PlayerMovement : MonoBehaviour {
 	private float _speed = 2f;
 	[SerializeField]
 	private float _runSpeed = 4f;
+    public string name;
 
-	private float _curSpeed {
+    private float _curSpeed {
 		set {
 			_curSpeed = Mathf.Clamp (value, _speed, _runSpeed);
 		}
@@ -22,8 +23,6 @@ public class PlayerMovement : MonoBehaviour {
 	}
 
 	private Rigidbody2D rigidbody2d;
-
-    public string name;
 
     Pos pos = new Pos();
 
@@ -37,11 +36,14 @@ public class PlayerMovement : MonoBehaviour {
 		Vector2 movement = new Vector2 (Input.GetAxis ("Horizontal"), Input.GetAxis ("Vertical"));
 		rigidbody2d.velocity = movement * _speed;
 
-        pos.x = rigidbody2d.transform.position.x;
-        pos.y = rigidbody2d.transform.position.y;
-        pos.z = rigidbody2d.transform.position.z;
+        PlayerData playerPosition = new PlayerData();
+        playerPosition.name = name;
+        playerPosition.x = transform.position.x;
+        playerPosition.y = transform.position.y;
+        playerPosition.z = transform.position.z;
 
-        string jsonPos = JsonMapper.ToJson(pos);
-        _socket.Emit("Move", new JSONObject(jsonPos));
-	}
+        string jsonPos = JsonMapper.ToJson(playerPosition);
+
+        _socket.Emit("SendPlayerData", new JSONObject(jsonPos));
+    }
 }

@@ -22,15 +22,22 @@ public class GameManager : MonoBehaviour {
     public PlayerData pd;
 
     [SerializeField]
-    private GameObject _playerPrefab;
+    private GameObject _copsPrefab;
     [SerializeField]
-    private GameObject _otherPlayerPrefab;
+    private GameObject _robberPrefab;
+
+    [SerializeField]
+    private GameObject _otherCopsPrefab;
+    [SerializeField]
+    private GameObject _otherRobberPrefab;
+
+    public float gameStartTime;
+    bool gameStarted;
 
     void Start()
     {
         DontDestroyOnLoad(this.gameObject);
         //_socket.On("OtherStarted", OtherPlayerStarted);
-        //_socket.On("UpdateOtherPlayer", UpdateOtherPlayer);
     }
 
     void Update()
@@ -38,27 +45,47 @@ public class GameManager : MonoBehaviour {
         if(_socket == null)
         {
             _socket = GameObject.Find("SocketIO").GetComponent<SocketIOComponent>();
+            _socket.On("OtherMove", UpdateOtherPlayer);
         }
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        if(Time.time <= gameStartTime + 3 && !gameStarted)
         {
-            GameObject playerObject = Instantiate(_playerPrefab) as GameObject;
-            playerObject.transform.name = _playersInGame[0].name;
+            StartGame();
+            gameStarted = true;
         }
     }
 
-    public void StartGame()
+    void StartGame()
     {
         for (int i = 0; i < _playersInGame.Count; i++)
         {
             if(_playersInGame[i].name == pd.name)
             {
-                GameObject playerObject = Instantiate(_playerPrefab) as GameObject;
-                playerObject.transform.name = _playersInGame[i].name;
+                if (pd.team == "r")
+                {
+                    GameObject playerObject = Instantiate(_robberPrefab) as GameObject;
+                    playerObject.transform.name = _playersInGame[i].name;
+                    playerObject.GetComponent<PlayerMovement>().name = pd.name;
+                    Camera.main.gameObject.GetComponent<TestCam>().SetCam(_playersInGame[i].name);
+                } else if (pd.team == "c")
+                {
+                    GameObject playerObject = Instantiate(_copsPrefab) as GameObject;
+                    playerObject.transform.name = _playersInGame[i].name;
+                    playerObject.GetComponent<PlayerMovement>().name = pd.name;
+                    Camera.main.gameObject.GetComponent<TestCam>().SetCam(_playersInGame[i].name);
+                }
+                
             } else
             {
-                GameObject playerObject = Instantiate(_otherPlayerPrefab) as GameObject;
-                playerObject.transform.name = _playersInGame[i].name;
+                if (_playersInGame[i].team == "r")
+                {
+                    GameObject playerObject = Instantiate(_otherRobberPrefab) as GameObject;
+                    playerObject.transform.name = _playersInGame[i].name;
+                } else if(_playersInGame[i].team == "c")
+                {
+                    GameObject playerObject = Instantiate(_otherCopsPrefab) as GameObject;
+                    playerObject.transform.name = _playersInGame[i].name;
+                }
             }
         }
 
@@ -76,13 +103,22 @@ public class GameManager : MonoBehaviour {
         player.y = transform.position.y;
         player.z = transform.position.z;
         _playersInGame.Add(player);
-        GameObject playerObject = Instantiate(_otherPlayerPrefab) as GameObject;
-        playerObject.transform.name = player.name;
+        if (player.team == "r")
+        {
+            GameObject playerObject = Instantiate(_otherRobberPrefab) as GameObject;
+            playerObject.transform.name = player.name;
+        }
+        else if (player.team == "c")
+        {
+            GameObject playerObject = Instantiate(_otherCopsPrefab) as GameObject;
+            playerObject.transform.name = player.name;
+        }
     }
 
     void UpdateOtherPlayer(SocketIOEvent e)
     {
         PlayerData pos = JsonMapper.ToObject<PlayerData>(e.data.ToString());
+        Debug.Log(pos.name + pos.x + pos.y + pos.z);
         GameObject.Find(pos.name).GetComponent<OtherPlayerMovementTest>().Move(new Vector3((float)pos.x, (float)pos.y, (float)pos.z));
     }
 }
