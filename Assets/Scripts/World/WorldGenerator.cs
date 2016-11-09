@@ -50,7 +50,7 @@ public class WorldGenerator : MonoBehaviour {
 
 	[Header("Events")]
 	[SerializeField]
-	private UnityEvent OnMapLoadDone;
+	public UnityEvent OnMapLoadDone;
 
 	private GameObject _map;
 

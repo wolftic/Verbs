@@ -48,11 +48,11 @@ public class GameManager : MonoBehaviour {
             _socket.On("OtherMove", UpdateOtherPlayer);
         }
 
-        if(Time.time <= gameStartTime + 3 && !gameStarted)
-        {
-            StartGame();
-            gameStarted = true;
-        }
+        GameObject.Find("WorldGenerator").GetComponent<WorldGenerator>().OnMapLoadDone.AddListener(StartGame);
+        
+            //StartGame();
+            //gameStarted = true;
+        
     }
 
     void StartGame()
@@ -61,18 +61,22 @@ public class GameManager : MonoBehaviour {
         {
             if(_playersInGame[i].name == pd.name)
             {
-                if (pd.team == "r")
+                if (_playersInGame[i].team == "r")
                 {
                     GameObject playerObject = Instantiate(_robberPrefab) as GameObject;
                     playerObject.transform.name = _playersInGame[i].name;
+                  //  playerObject.transform.position = new Vector3(85, 87, 0);
                     playerObject.GetComponent<PlayerMovement>().name = pd.name;
-                    Camera.main.gameObject.GetComponent<TestCam>().SetCam(_playersInGame[i].name);
-                } else if (pd.team == "c")
+                    Camera.main.gameObject.GetComponent<TestCam>().SetCam(pd.name);
+                    Debug.Log("spanwed local r");
+                } else if (_playersInGame[i].team == "c")
                 {
                     GameObject playerObject = Instantiate(_copsPrefab) as GameObject;
                     playerObject.transform.name = _playersInGame[i].name;
+                   // playerObject.transform.position = new Vector3(3, 2, 0);
                     playerObject.GetComponent<PlayerMovement>().name = pd.name;
                     Camera.main.gameObject.GetComponent<TestCam>().SetCam(_playersInGame[i].name);
+                    Debug.Log("spanwed local c");
                 }
                 
             } else
@@ -81,10 +85,14 @@ public class GameManager : MonoBehaviour {
                 {
                     GameObject playerObject = Instantiate(_otherRobberPrefab) as GameObject;
                     playerObject.transform.name = _playersInGame[i].name;
+                    Debug.Log("spanwed not local r");
+                    //  playerObject.transform.position = new Vector3(85, 87, 0);
                 } else if(_playersInGame[i].team == "c")
                 {
-                    GameObject playerObject = Instantiate(_otherCopsPrefab) as GameObject;
+                    GameObject playerObject = Instantiate(_copsPrefab) as GameObject;
                     playerObject.transform.name = _playersInGame[i].name;
+                    Debug.Log("spanwedno t local c");
+                    // playerObject.transform.position = new Vector3(3, 2, 0);
                 }
             }
         }
@@ -105,20 +113,23 @@ public class GameManager : MonoBehaviour {
         _playersInGame.Add(player);
         if (player.team == "r")
         {
-            GameObject playerObject = Instantiate(_otherRobberPrefab) as GameObject;
+            GameObject playerObject = Instantiate(_otherRobberPrefab,new Vector3(85, 87, 0), Quaternion.identity) as GameObject;
             playerObject.transform.name = player.name;
+            Debug.Log("spanwed ? r");
+            //playerObject.transform.position = new Vector3(85, 87, 0);
         }
         else if (player.team == "c")
         {
-            GameObject playerObject = Instantiate(_otherCopsPrefab) as GameObject;
+            GameObject playerObject = Instantiate(_copsPrefab, new Vector3(3, 2, 0), Quaternion.identity) as GameObject;
             playerObject.transform.name = player.name;
+            Debug.Log("spanwed ? c");
+            //playerObject.transform.position = new Vector3(3, 2, 0);
         }
     }
 
     void UpdateOtherPlayer(SocketIOEvent e)
     {
         PlayerData pos = JsonMapper.ToObject<PlayerData>(e.data.ToString());
-        Debug.Log(pos.name + pos.x + pos.y + pos.z);
         GameObject.Find(pos.name).GetComponent<OtherPlayerMovementTest>().Move(new Vector3((float)pos.x, (float)pos.y, (float)pos.z));
     }
 }
